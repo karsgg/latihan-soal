@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>SmartLatih SMA & UTBK</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+margin:0;
+font-family:Segoe UI,Arial;
+background:linear-gradient(135deg,#020617,#0f172a);
+color:#fff
+}
+.container{max-width:1000px;margin:auto;padding:20px}
+h1{text-align:center}
+.subtitle{text-align:center;color:#c7d2fe;margin-bottom:25px}
+
+.card{
+background:#fff;
+color:#000;
+padding:25px;
+border-radius:16px;
+margin-bottom:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.25)
+}
+
+input,select,button{
+width:100%;
+padding:14px;
+margin:10px 0;
+border-radius:10px;
+font-size:15px
+}
+
+button{
+background:#2563eb;
+color:#fff;
+border:none;
+font-weight:700;
+cursor:pointer
+}
+button:hover{background:#1d4ed8}
+
+.question{
+background:#f1f5f9;
+padding:18px;
+border-radius:14px;
+margin-bottom:16px
+}
+
+.option{
+display:block;
+background:#fff;
+margin:8px 0;
+padding:10px;
+border-radius:8px
+}
+
+.hidden{display:none}
+.username-box{
+background:#1e293b;
+color:#e0e7ff;
+padding:12px;
+border-radius:10px;
+margin-bottom:15px;
+font-weight:600
+}
+
+.footer{
+text-align:center;
+font-size:13px;
+color:#94a3b8;
+margin-top:20px
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>📘 SmartLatih SMA & UTBK</h1>
+<div class="subtitle">Latihan Pintar • Soal Unik • Siap UTBK</div>
+
+<div class="card" id="menu">
+<input id="username" placeholder="Masukkan Username">
+
+<select id="mode" onchange="modeChange()">
+<option value="sma">Latihan SMA</option>
+<option value="utbk">UTBK</option>
+</select>
+
+<select id="mapel">
+<option value="matematika">Matematika</option>
+<option value="fisika">Fisika</option>
+<option value="indonesia">Bahasa Indonesia</option>
+<option value="inggris">Bahasa Inggris</option>
+</select>
+
+<select id="jumlah">
+<option value="10">10 Soal</option>
+<option value="20">20 Soal</option>
+<option value="40">40 Soal</option>
+</select>
+
+<button onclick="start()">Mulai</button>
+</div>
+
+<div class="card hidden" id="quiz"></div>
+<div class="card hidden" id="hasil"></div>
+
+<div class="footer">© SmartLatih Education</div>
+</div>
+
+<script>
+const quiz=document.getElementById("quiz");
+const hasil=document.getElementById("hasil");
+const mode=document.getElementById("mode");
+const mapel=document.getElementById("mapel");
+const jumlah=document.getElementById("jumlah");
+const usernameInput=document.getElementById("username");
+
+let soalAktif=[];
+
+/* MODE */
+function modeChange(){
+if(mode.value==="utbk"){
+jumlah.value=50;
+jumlah.disabled=true;
+mapel.disabled=true;
+}else{
+jumlah.disabled=false;
+mapel.disabled=false;
+}
+}
+
+/* UTIL */
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+
+/* GENERATOR */
+function genSoal(tipe){
+if(tipe==="matematika"){
+let a=rand(2,20),b=rand(2,15);
+let benar=a*b;
+let opsi=[benar,benar+2,benar-2,benar+5].sort(()=>Math.random()-0.5);
+return{q:`Hasil dari ${a} × ${b} adalah ...`,o:opsi,a:opsi.indexOf(benar)};
+}
+if(tipe==="fisika"){
+let v=rand(5,30),t=rand(2,10);
+let benar=v*t;
+let opsi=[benar,benar+10,benar-5,benar+20].sort(()=>Math.random()-0.5);
+return{q:`Benda bergerak dengan kecepatan ${v} m/s selama ${t} s. Jaraknya ...`,o:opsi,a:opsi.indexOf(benar)};
+}
+if(tipe==="indonesia"){
+let data=[["Sinonim 'rajin'","Tekun"],["Antonim 'boros'","Hemat"],["Makna 'efisien'","Hemat"],["Sinonim 'cerdas'","Pintar"]];
+let d=data[rand(0,data.length-1)];
+let opsi=[d[1],"Malas","Lambat","Bodoh"].sort(()=>Math.random()-0.5);
+return{q:d[0]+" adalah ...",o:opsi,a:opsi.indexOf(d[1])};
+}
+if(tipe==="inggris"){
+let data=[["go","went"],["eat","ate"],["see","saw"],["take","took"]];
+let d=data[rand(0,data.length-1)];
+let opsi=[d[1],"gone","goes","going"].sort(()=>Math.random()-0.5);
+return{q:`Past tense dari "${d[0]}" adalah ...`,o:opsi,a:opsi.indexOf(d[1])};
+}
+}
+
+/* START */
+function start(){
+let user=usernameInput.value.trim();
+if(!user) return alert("Username wajib diisi!");
+
+quiz.innerHTML=`<div class="username-box">👤 ${user}</div>`;
+quiz.classList.remove("hidden");
+document.getElementById("menu").classList.add("hidden");
+hasil.classList.add("hidden");
+
+let total=mode.value==="utbk"?50:parseInt(jumlah.value);
+let used=new Set();
+soalAktif=[];
+
+while(soalAktif.length<total){
+let tipe=mode.value==="utbk"
+?["matematika","fisika","indonesia","inggris"][rand(0,3)]
+:mapel.value;
+
+let s=genSoal(tipe);
+if(!used.has(s.q)){
+used.add(s.q);
+soalAktif.push(s);
+}
+}
+
+soalAktif.forEach((s,i)=>{
+let h=`<div class="question"><b>${i+1}. ${s.q}</b>`;
+s.o.forEach((op,x)=>h+=`<label class="option"><input type="radio" name="q${i}" value="${x}"> ${op}</label>`);
+quiz.innerHTML+=h+"</div>";
+});
+quiz.innerHTML+=`<button onclick="selesai('${user}')">Selesai</button>`;
+}
+
+/* HASIL */
+function selesai(user){
+let benar=0;
+soalAktif.forEach((s,i)=>{
+let p=document.querySelector(`input[name=q${i}]:checked`);
+if(p && +p.value===s.a) benar++;
+});
+hasil.innerHTML=`<h2>Hasil ${user}</h2>Benar: ${benar}<br>Salah: ${soalAktif.length-benar}<br>Skor: ${benar*10}<br><br><button onclick="location.reload()">Ulangi</button>`;
+quiz.classList.add("hidden");
+hasil.classList.remove("hidden");
+}
+</script>
+</body>
+</html>
